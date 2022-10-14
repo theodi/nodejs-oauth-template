@@ -5,6 +5,7 @@
 2) Setup environment variabliables, e.g.
 
 export GOOGLE_CLIENT_ID='13343534543'
+
 export GOOGLE_CLIENT_SECRET=
 
 3) node install
