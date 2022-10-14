@@ -1,0 +1,22 @@
+<!-- views/pages/auth.ejs -->
+<%- include('../partials/header', { data: data }) %>
+<style>
+        .box {width: 340px;}
+        .heading {text-align:center;padding:10px;font-family: 'Open Sans', arial;color: #555;font-size: 18px;font-weight: 400;}
+        .circle-image{width:100px;height:100px;-webkit-border-radius: 50%;border-radius: 50%;}
+        .welcome{font-size: 16px;font-weight: bold;text-align: center;margin: 10px 0 0;min-height: 1em;}
+        .oauthemail{font-size: 14px;}
+        .logout{font-size: 13px;text-align: right;padding: 5px;margin: 20px 5px 0px 5px;border-top: #CCCCCC 1px solid;}
+        .logout a{color:#8E009C;}
+</style>
+<br/>
+<div class="container">
+    <div class="jumbotron text-center text-primary">
+        <div class="box">
+            <img src="images/user.png" width="100px" size="100px"><br>
+            <a class="login" href="/auth/google"><img class="login" src="images/sign-in-with-google.png" width="250px" size="54px"></a>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
