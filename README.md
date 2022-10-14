@@ -8,7 +8,7 @@ export GOOGLE_CLIENT_ID='13343534543'
 
 export GOOGLE_CLIENT_SECRET=
 
-3) node install
+3) npm install
 
 4) node index.js
 
