@@ -1,5 +1,5 @@
 {
-  "name": "ODI NodeJS Template",
+  "name": "odi-nodejs-template",
   "version": "1.0.0",
   "description": "The ODI NodeJS Template (Express + PassportJS + Google Oauth)",
   "main": "index.js",
