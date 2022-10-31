@@ -1,3 +1,5 @@
+//Loads the config fomr config.env to process.env (turn off prior to deployment)
+require("dotenv").config({ path: "./config.env" });
 // index.js
 
 /*  EXPRESS */
@@ -16,6 +18,9 @@ app.use(session({
   saveUninitialized: true,
   secret: 'SECRET' 
 }));
+
+/* Setup public directory
+ * Everything in her does not require authentication */
 
 app.use(express.static(__dirname + '/public'));
 
@@ -84,8 +89,25 @@ app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/error' }),
   function(req, res) {
     // Successful authentication, redirect success.
+    // Redirects to the profile page, CHANGE THIS to redirect to another page, e.g. a tool that is protected
     res.redirect('/profile');
   });
+
+
+/* Setup function to handle authentications */
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated())
+    return next();
+  else
+    unauthorised(res);
+}
+
+
+/* Setup private directory, everything in here requires authentication */
+
+app.use('/private', ensureAuthenticated);
+app.use('/private', express.static(__dirname + '/private'));
 
 /* Define all the pages */
 
