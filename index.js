@@ -103,6 +103,13 @@ function ensureAuthenticated(req, res, next) {
     unauthorised(res);
 }
 
+function unauthorised(res) {
+  sitedata.user = null;
+  sitedata.page.title = "401 Unauthorised";
+  return res.status(401).render("errors/401", {
+    data: sitedata
+  });
+}
 
 /* Setup private directory, everything in here requires authentication */
 
