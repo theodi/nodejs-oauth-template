@@ -7,10 +7,6 @@ require("dotenv").config({ path: "./config.env" });
 const express = require('express');
 const app = express();
 const session = require('express-session');
-var sitedata = {};
-sitedata.user = null;
-sitedata.page = {};
-sitedata.page.title = "ODI Template (NodeJS + Express + OAuth)";
 app.set('view engine', 'ejs');
 
 app.use(session({
@@ -19,26 +15,34 @@ app.use(session({
   secret: 'SECRET' 
 }));
 
+//Put the user object in a global veriable so it can be accessed from templates
+app.use(function(req, res, next) {
+  try {
+    res.locals.user = req.session.passport.user;
+    next();
+  } catch (error) {
+    res.locals.user = req.session.user;
+    next();
+  }
+});
+
 /* Setup public directory
  * Everything in her does not require authentication */
 
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res) {
-  if (userProfile) {
+  if (req.session.passport) {
     res.redirect("/profile");
-  } else {
-    sitedata.page.title = "ODI Template (NodeJS + Express + OAuth)";
-    res.render('pages/auth', {
-      data: sitedata
-    });
+  } else { 
+    res.locals.pageTitle ="ODI Template (NodeJS + Express + OAuth)";
+    res.render('pages/auth');
   }
 });
 
 /*  PASSPORT SETUP  */
 
 const passport = require('passport');
-var userProfile;
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -48,9 +52,6 @@ app.set('view engine', 'ejs');
 app.post('/logout', function(req, res, next){
   req.logout(function(err) {
     if (err) { return next(err); }
-    sitedata.user = null;
-    userProfile = null;
-    user = null;
     res.redirect('/');
   });
 });
@@ -77,8 +78,7 @@ passport.use(new GoogleStrategy({
     callbackURL: "http://localhost:3080/auth/google/callback"
   },
   function(accessToken, refreshToken, profile, done) {
-      userProfile=profile;
-      return done(null, userProfile);
+        return done(null, profile);
   }
 ));
  
@@ -88,6 +88,7 @@ app.get('/auth/google',
 app.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/error' }),
   function(req, res) {
+    //console.log(req.user);
     // Successful authentication, redirect success.
     // Redirects to the profile page, CHANGE THIS to redirect to another page, e.g. a tool that is protected
     res.redirect('/profile');
@@ -104,11 +105,8 @@ function ensureAuthenticated(req, res, next) {
 }
 
 function unauthorised(res) {
-  sitedata.user = null;
-  sitedata.page.title = "401 Unauthorised";
-  return res.status(401).render("errors/401", {
-    data: sitedata
-  });
+  res.locals.pageTitle ="401 Unauthorised";
+  return res.status(401).render("errors/401");
 }
 
 /* Setup private directory, everything in here requires authentication */
@@ -121,52 +119,36 @@ app.use('/private', express.static(__dirname + '/private'));
 /* Do not require login */
 
 app.get('/page1', function(req, res) {
-  sitedata.user = userProfile;
-  sitedata.page.title = "Page 1";
-  res.render('pages/page1', {
-    data: sitedata
-  })
+  res.locals.pageTitle ="Page 1";
+  res.render('pages/page1')
 });
 
 /* Require user to be logged in */
 
 app.get('/profile', function(req, res) {
-  if (!userProfile) {
-    sitedata.user = null;
-    sitedata.page.title = "401 Unauthorised";
-    return res.status(401).render("errors/401", {
-      data: sitedata
-    });
+  if (!req.isAuthenticated()) {
+    res.locals.pageTitle ="401 Unauthorised";
+    return res.status(401).render("errors/401");
   }
-  sitedata.user = userProfile;
-  sitedata.page.title = "Profile page";
-  res.render('pages/profile', {
-    data: sitedata
-  })
+  res.locals.pageTitle ="Profile page";
+    
+  res.render('pages/profile')
 });
 
 app.get('/page2', function(req, res) {
-  if (!userProfile) {
-    sitedata.user = null;
-    sitedata.page.title = "401 Unauthorised";
-    return res.status(401).render("errors/401", {
-      data: sitedata
-    });
+  if (!req.isAuthenticated()) {
+    res.locals.pageTitle ="401 Unauthorised";
+    return res.status(401).render("errors/401");
   }
-  sitedata.user = userProfile;
-  sitedata.page.title = "Page 2";
-  res.render('pages/page2', {
-    data: sitedata
-  })
+  res.locals.pageTitle ="Page 2";
+  res.render('pages/page2');
 });
 
 //Keep this at the END!
 
 app.get('*', function(req, res){
-  sitedata.page.title = "404 Not Found";
-  return res.status(404).render("errors/404", {
-    data: sitedata
-  });
+  res.locals.pageTitle ="404 Not Found";
+  return res.status(404).render("errors/404");
 });
 
 /* Run server */

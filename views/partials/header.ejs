@@ -7,7 +7,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><%= data.page.title %></title>
+<title><%= pageTitle %></title>
 <link href="/css/odi-bootstrap.css" rel="stylesheet">
 <link href="/css/style.css" rel="stylesheet">
 <link href="/css/nav.css" rel="stylesheet">
@@ -32,7 +32,7 @@
 <div class="mobilenav">
   <li><a href="/">Home</a></li>
 	<li><a href="/page1">Page 1</a></li>
-	<% if(data.user) { %>
+	<% if(user) { %>
 		<li><a href="/page2">Page 2</a></li>
 		<li><a href="/profile">Profile</a></li>
 		<li>
@@ -50,7 +50,7 @@
 			<ul class='nav pull-right'>
 				<li><a href="/">Home</a></li>
 				<li><a href="/page1">Page 1</a></li>
-				<% if(data.user) { %>
+				<% if(user) { %>
 					<li><a href="/page2">Page 2</a></li>
 					<li><a href="/profile">Profile</a></li>
 					<li>

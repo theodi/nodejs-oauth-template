@@ -1,5 +1,5 @@
 <!-- views/profile.ejs -->
-<%- include('../partials/header', { data: data }) %>
+<%- include('../partials/header') %>
   <div class="container">
     <div class="jumbotron">
       <h1 class="text-primary  text-center"><span class="fa fa-user"></span> Profile Information</h1>
@@ -7,9 +7,9 @@
           <div class="col-sm-6">
             <div class="well">
               <p>
-                <strong>Id</strong>: <%= data.user.id %><br>
-                <strong>Email</strong>: <%= data.user.emails[0].value %><br>
-                <strong>Name</strong>: <%= data.user.displayName %>
+                <strong>Id</strong>: <%= user.id %><br>
+                <strong>Email</strong>: <%= user.emails[0].value %><br>
+                <strong>Name</strong>: <%= user.displayName %>
               </p>
               </div>
           </div>
