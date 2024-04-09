@@ -7,6 +7,7 @@ require("dotenv").config({ path: "./config.env" });
 const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
+const OAuth2Strategy = require('passport-oauth2').Strategy; // Assuming OAuth2Strategy is compatible with your custom Django OAuth endpoint
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
 const app = express();
@@ -27,7 +28,6 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   secret: process.env.SESSION_SECRET,
-  //cookie: { secure: true } // Set to true in production if served over HTTPS
 }));
 
 // Initialize Passport.js
@@ -40,14 +40,55 @@ app.use(function(req, res, next) {
   next();
 });
 
-/* Google AUTH */
-passport.use(new GoogleStrategy({
+// Passport setup for Google authentication
+passport.use('google', new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: process.env.GOOGLE_CALLBACK_URL
+}, (accessToken, refreshToken, profile, done) => {
+  console.log(profile);
+  profile.email = profile.emails[0].value;
+  profile.displayName = profile.displayName;
+  // Google authentication strategy callback function
+  // You can customize this function to handle user creation/updating etc.
+  return done(null, profile);
+}));
+
+
+/* Custom Django AUTH */
+passport.use('django', new OAuth2Strategy({
+  authorizationURL: 'https://theodi.org/auth/authorize/',
+  tokenURL: 'https://theodi.org/auth/token/',
+  clientID: process.env.DJANGO_CLIENT_ID,
+  clientSecret: process.env.DJANGO_CLIENT_SECRET,
+  callbackURL: process.env.DJANGO_CALLBACK_URL,
+  grant_type: 'authorization_code', // Specify grant type
+  pkce: true, // Enable PKCE,
+  state: true
 },
 function(accessToken, refreshToken, profile, done) {
-  return done(null, profile);
+  fetch('https://theodi.org/api/user', {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    }
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Failed to fetch user profile');
+    }
+    return response.json();
+  })
+  .then(userProfile => {
+    // Merge the fetched user profile with the profile object
+    Object.keys(userProfile).forEach(key => {
+      profile[key] = userProfile[key];
+    });
+    return done(null, profile);
+  })
+  .catch(error => {
+    console.error('Error fetching user profile:', error);
+    return done(error);
+  });
 }));
 
 // Serialize and deserialize user
@@ -59,11 +100,27 @@ passport.deserializeUser(function(obj, cb) {
   cb(null, obj);
 });
 
-// Authentication routes
-app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+// Authentication route for Google
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
 
+// Authentication route for Django
+app.get('/auth/django',
+  passport.authenticate('django')
+);
+
+// Callback endpoint for Google authentication
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/error' }),
+  (req, res) => {
+    // Successful authentication, redirect to profile page or wherever needed
+    res.redirect('/profile');
+  }
+);
+
+app.get('/auth/django/callback',
+  passport.authenticate('django', { failureRedirect: '/error' }),
   function(req, res) {
     res.redirect('/profile');
   });
@@ -78,7 +135,6 @@ app.post('/logout', function(req, res, next){
 
 // Middleware to ensure authentication
 function ensureAuthenticated(req, res, next) {
-  console.log('checking authentication');
   if (req.isAuthenticated())
     return next();
   else

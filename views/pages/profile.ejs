@@ -8,8 +8,8 @@
             <div class="well">
               <p>
                 <strong>Id</strong>: <%= user.id %><br>
-                <strong>Email</strong>: <%= user.emails[0].value %><br>
-                <strong>Name</strong>: <%= user.displayName %>
+                <strong>Email</strong>: <%= user.email %><br>
+                <strong>Name</strong>: <%= user.displayName || (user.first_name + ' ' + user.last_name) %>
               </p>
               </div>
           </div>
