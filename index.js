@@ -5,7 +5,7 @@ require("dotenv").config({ path: "./config.env" });
 
 const express = require('express');
 const session = require('express-session');
-const passport = require('./auth'); // Require the auth module
+const passport = require('./passport'); // Require the auth module
 const authRoutes = require('./routes/auth'); // Require the authentication routes module
 const app = express();
 const port = process.env.PORT || 3080;

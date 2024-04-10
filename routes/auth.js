@@ -1,7 +1,7 @@
 // authRoutes.js
 
 const express = require('express');
-const passport = require('../auth'); // Require the passport module
+const passport = require('../passport'); // Require the passport module
 
 const router = express.Router();
 
