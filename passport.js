@@ -16,41 +16,6 @@ passport.use('google', new GoogleStrategy({
   return done(null, profile);
 }));
 
-// Passport setup for Django authentication
-passport.use('django', new OAuth2Strategy({
-  authorizationURL: 'https://theodi.org/auth/authorize/',
-  tokenURL: 'https://theodi.org/auth/token/',
-  clientID: process.env.DJANGO_CLIENT_ID,
-  clientSecret: process.env.DJANGO_CLIENT_SECRET,
-  callbackURL: process.env.DJANGO_CALLBACK_URL,
-  grant_type: 'authorization_code', // Specify grant type
-  pkce: true, // Enable PKCE,
-  state: true
-}, (accessToken, refreshToken, profile, done) => {
-  fetch('https://theodi.org/api/user', {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Failed to fetch user profile');
-    }
-    return response.json();
-  })
-  .then(userProfile => {
-    // Merge the fetched user profile with the profile object
-    Object.keys(userProfile).forEach(key => {
-      profile[key] = userProfile[key];
-    });
-    return done(null, profile);
-  })
-  .catch(error => {
-    console.error('Error fetching user profile:', error);
-    return done(error);
-  });
-}));
-
 // Serialize and deserialize user
 passport.serializeUser(function(user, cb) {
   cb(null, user);

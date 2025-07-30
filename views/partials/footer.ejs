@@ -1,22 +1,39 @@
-<!-- views/partials/footer.ejs -->
-</div>
-<footer id='footer'>
-	<div class='container'>
-		<div class='span8 footer-content'>
-			<h1><a href='http://www.theodi.org'>Open Data Institute</a></h1>
-			<p><a href='http://www.openstreetmap.org/?lat=51.534780900551354&amp;lon=-0.12180447578430176&amp;zoom=16&amp;layers=T&amp;mlat=51.53478&amp;mlon=-0.12180'>Open Data Institute</a><span>, 5th Floor, Kings Place, 90 York Way, London N1 9AG</span></p>
-			<p><a href='mailto:info@theodi.org'>info@theodi.org</a> · Company <a href='http://opencorporates.com/companies/gb/08030289'>08030289</a>	· <span>VAT</span> <span>143 7796 80</span></p>
-		</div>
-		<div class='span4 footer-nav'>
-			<nav>
-				<ul class='pull-right'>
-					<li><a target="_blank" href="http://www.theodi.org/terms-of-use">Terms of use</a></li>
-					<li><a target="_blank" href="http://www.theodi.org/about">About</a></li>
-					<li><a target="_blank" href="http://www.theodi.org/contact">Get in touch</a></li>
-				</ul>
-			</nav>
-		</div>
-	</div>
-</footer>
+
 </body>
-</html>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const contentOverlay = document.getElementById('contentOverlay');
+  const overlayContentArea = document.getElementById('overlay-content-inner');
+/*
+  const glossaryLink = document.getElementById('glossary-link');
+  glossaryLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    showOverlay("/glossary");
+  });
+  */
+  const privacyLink = document.getElementById('privacy-link');
+  privacyLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    showOverlay("/about");
+  });
+
+  function showOverlay(link) {
+    fetch(link)
+      .then(response => response.text())
+      .then(data => {
+        overlayContentArea.innerHTML = data;
+        openOverlay();
+      })
+      .catch(error => console.error('Error fetching content:', error));
+  }
+
+  function openOverlay() {
+    contentOverlay.style.display = 'block';
+  }
+
+  window.closeOverlay = function() {
+    contentOverlay.style.display = 'none';
+  };
+});
+
+</script>

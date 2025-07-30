@@ -1,0 +1,11 @@
+<!-- views/profile.ejs -->
+<%- include('../../partials/header') %>
+<section class="content-block light-grey">
+  <h1>Profile Information</h1>
+  <p>
+    <b>Id</b>: <%= user.id %><br>
+    <b>Email</b>: <%= user.email %><br>
+    <b>Name</b>: <%= user.displayName || (user.first_name + ' ' + user.last_name) %><br>
+  </p>
+</section>
+<%- include('../../partials/footer') %>

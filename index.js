@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 // Load environment variables securely
 require("dotenv").config({ path: "./config.env" });
 
@@ -7,6 +10,7 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('./passport'); // Require the auth module
 const authRoutes = require('./routes/auth'); // Require the authentication routes module
+
 const app = express();
 const port = process.env.PORT || 3080;
 app.set('view engine', 'ejs');
@@ -28,7 +32,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
 }));
 
-// Middleware for user object
+const { ensureAuthenticated } = require('./middleware/auth');
 
 // Initialize Passport.js
 app.use(passport.initialize());
@@ -39,63 +43,67 @@ app.use(function(req, res, next) {
   next();
 });
 
-// Logout route
-app.post('/logout', function(req, res, next){
-  req.logout(function(err) {
-    if (err) { return next(err); }
-    res.redirect('/');
+app.use((req, res, next) => {
+  // Read package.json file
+  fs.readFile(path.join(__dirname, 'package.json'), 'utf8', (err, data) => {
+      if (err) {
+          console.error('Error reading package.json:', err);
+          return next();
+      }
+
+      try {
+          const packageJson = JSON.parse(data);
+          // Extract version from package.json
+          var software = {};
+          software.version = packageJson.version;
+          software.homepage = packageJson.homepage;
+          software.versionLink = packageJson.homepage + "/releases/tag/v" + packageJson.version;
+          res.locals.software = software;
+      } catch (error) {
+          console.error('Error parsing package.json:', error);
+      }
+      next();
   });
 });
 
-// Middleware to ensure authentication
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated())
-    return next();
-  else
-    unauthorised(res);
-}
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate'); // HTTP 1.1.
+  res.setHeader('Pragma', 'no-cache'); // HTTP 1.0.
+  res.setHeader('Expires', '0'); // Proxies.
+  next();
+});
 
-function unauthorised(res) {
-  res.locals.pageTitle ="401 Unauthorised";
-  return res.status(401).render("errors/401");
-}
+/* Setup public directory
+ * Everything in her does not require authentication */
 
-// Routes
-
-app.use(express.static(__dirname + '/public')); // Public directory
+app.use(express.static(__dirname + '/public'));
 
 // Use authentication routes
 app.use('/auth', authRoutes);
 
 app.get('/', function(req, res) {
-  if (req.session.passport) {
-    res.redirect("/profile");
-  } else {
-    res.locals.pageTitle ="ODI Template (NodeJS + Express + OAuth)";
-    res.render('pages/auth');
-  }
+  const page = {
+    title: "ODI Template",
+    link: "/"
+  };
+  res.locals.page = page;
+  res.render('pages/home');
 });
 
-app.get('/page1', function(req, res) {
-  res.locals.pageTitle ="Page 1";
-  res.render('pages/page1');
-});
+/* Setup private directory, everything in here requires authentication */
 
-app.get('/profile', ensureAuthenticated, function(req, res) {
-  res.locals.pageTitle ="Profile page";
-  res.render('pages/profile');
-});
+app.use('/private', ensureAuthenticated);
+app.use('/private', express.static(__dirname + '/private'));
 
-app.get('/page2', ensureAuthenticated, function(req, res) {
-  res.locals.pageTitle ="Page 2";
-  res.render('pages/page2');
-});
+/* Example of a private route */
 
-// Error handling
-app.get('/error', (req, res) => res.send("error logging in"));
-app.get('*', function(req, res){
-  res.locals.pageTitle ="404 Not Found";
-  return res.status(404).render("errors/404");
+app.get('/private', ensureAuthenticated, function(req, res) {
+  const page = {
+    title: "Private",
+    link: "/private"
+  };
+  res.locals.page = page;
+  res.render('pages/private');
 });
 
 // Start server
