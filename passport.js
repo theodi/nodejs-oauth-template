@@ -1,8 +1,9 @@
 // auth.js
 
-const passport = require('passport');
-const OAuth2Strategy = require('passport-oauth2').Strategy;
-const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+import passport from 'passport';
+import GoogleStrategy from 'passport-google-oauth20';
+import dotenv from 'dotenv';
+dotenv.config({ path: "./config.env" });
 
 // Passport setup for Google authentication
 passport.use('google', new GoogleStrategy({
@@ -25,4 +26,4 @@ passport.deserializeUser(function(obj, cb) {
   cb(null, obj);
 });
 
-module.exports = passport;
+export default passport;

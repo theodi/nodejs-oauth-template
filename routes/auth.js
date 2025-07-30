@@ -1,9 +1,9 @@
 // authRoutes.js
 
-const express = require('express');
-const passport = require('../passport'); // Require the passport module
+import express from 'express';
+import passport from '../passport.js'; // Import the passport module
 
-const { ensureAuthenticated } = require('../middleware/auth');
+import { ensureAuthenticated } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -52,4 +52,4 @@ router.get('/profile', ensureAuthenticated, async (req, res) => {
   res.render('pages/auth/profile');
 });
 
-module.exports = router;
+export default router;

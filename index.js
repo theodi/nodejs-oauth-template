@@ -1,22 +1,29 @@
-const fs = require('fs');
-const path = require('path');
+// Load environment variables FIRST, before any other imports
+import dotenv from 'dotenv';
+dotenv.config({ path: "./config.env" });
 
-// Load environment variables securely
-require("dotenv").config({ path: "./config.env" });
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // index.js
 
-const express = require('express');
-const session = require('express-session');
-const passport = require('./passport'); // Require the auth module
-const authRoutes = require('./routes/auth'); // Require the authentication routes module
+import express from 'express';
+import session from 'express-session';
+import passport from './passport.js'; // Import the auth module
+import authRoutes from './routes/auth.js'; // Import the authentication routes module
 
 const app = express();
 const port = process.env.PORT || 3080;
 app.set('view engine', 'ejs');
 
 // Middleware for logging
-const logger = require('morgan');
+import logger from 'morgan';
 app.use(logger('dev'));
 
 // Middleware for parsing incoming requests
@@ -32,7 +39,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
 }));
 
-const { ensureAuthenticated } = require('./middleware/auth');
+import { ensureAuthenticated } from './middleware/auth.js';
 
 // Initialize Passport.js
 app.use(passport.initialize());
